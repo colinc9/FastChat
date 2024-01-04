@@ -41,6 +41,7 @@ from fastchat.modules.exllama import ExllamaConfig
 from fastchat.modules.xfastertransformer import XftConfig
 from fastchat.utils import is_partial_stop, is_sentence_complete, get_context_length
 
+import h5py
 
 def prepare_logits_processor(
     temperature: float, repetition_penalty: float, top_p: float, top_k: int
@@ -373,6 +374,14 @@ def chat_loop(
         revision=revision,
         debug=debug,
     )
+    print("Model is loaded")
+    weights = model.state_dict()
+    with h5py.File('./vicuna_weight.h5', 'w') as h5f:
+        for k, v in weights.items():
+            h5f.create_dataset(k, data=v.cpu().numpy())
+        print(len(weights))
+    print("Weights are saved")
+    return
     generate_stream_func = get_generate_stream_function(model, model_path)
 
     model_type = str(type(model)).lower()
